@@ -1,4 +1,4 @@
-"""FastLTR pipeline wrapper + argument parsing, calls into pipeline.py
+"""RepEater pipeline wrapper + argument parsing, calls into pipeline.py
 """
 
 import os
@@ -56,10 +56,10 @@ def parse_args():
                              'behind each consensus, as aligned FASTA, into '
                              '<clustering>/alignments/')
     parser.add_argument('--image', dest='image', default=None,
-                        help='Path to the FastLTR container image (.sif) to '
+                        help='Path to the RepEater container image (.sif) to '
                              'run TEsorter from. Only needed when TEsorter is '
                              'not on PATH; ignored when already running inside '
-                             'the image. Overrides $FASTLTR_IMAGE.')
+                             'the image. Overrides $REP_EATER_IMAGE.')
     args = parser.parse_args()
 
     if not args.genome and not args.genome_list:

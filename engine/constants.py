@@ -1,4 +1,4 @@
-"""Tuning constants for the FastLTR pipeline.
+"""Tuning constants for the RepEater pipeline.
 """
 
 # ---------------------------------------------------------------------------

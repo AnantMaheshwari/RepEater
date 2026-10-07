@@ -1,4 +1,4 @@
-"""FastLTR pipeline: tandem compression, LTR detection, clustering, consensus, iterative collapse.
+"""RepEater pipeline: tandem compression, LTR detection, clustering, consensus, iterative collapse.
 """
 
 import os

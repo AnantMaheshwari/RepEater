@@ -42,14 +42,14 @@ def _git_state():
 
 
 def _version():
-    """FastLTR's own version.
+    """RepEater's own version.
     """
-    env = os.environ.get('FASTLTR_VERSION')
+    env = os.environ.get('REP_EATER_VERSION')
     if env:
         return env
     try:
         from importlib.metadata import version
-        return version('fastltr')
+        return version('RepEater')
     except Exception:
         return None
 
@@ -76,7 +76,7 @@ def render_run_params(args, output_dir, base, genome_bp=None,
     if tool_versions:
         lines.append('tools:')
         for key in ('mode', 'image', 'tesorter_path', 'tesorter', 'hmmer',
-                    'blast', 'fastltr_image_version', 'fastltr_image_revision'):
+                    'blast', 'repeater_image_version', 'repeater_image_revision'):
             if key in tool_versions and tool_versions[key] is not None:
                 lines.append(f'  {key}: {_scalar(tool_versions[key])}')
 

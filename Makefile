@@ -4,9 +4,9 @@ all: external libs seqtools
 
 # The image is built by CI (.github/workflows/container.yml) and published to
 # GHCR; this only pulls it down as a SIF.  Pin by digest for runs you intend to
-# keep:  make sif IMAGE=ghcr.io/anantmaheshwari/fastltr_framework@sha256:<digest>
-IMAGE ?= ghcr.io/anantmaheshwari/fastltr_framework:latest
-SIF   ?= fastltr.sif
+# keep:  make sif IMAGE=ghcr.io/anantmaheshwari/rep_eater@sha256:<digest>
+IMAGE ?= ghcr.io/anantmaheshwari/rep_eater:latest
+SIF   ?= RepEater.sif
 
 sif:
 	singularity pull $(SIF) docker://$(IMAGE)

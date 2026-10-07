@@ -1,4 +1,4 @@
-# Build the FastLTR image
+# Build the RepEater image
 name: container
 
 on:
@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
     inputs:
       platforms:
-        description: 'Target platforms (drop linux/arm64 for a fast amd64-only build)'
-        default: 'linux/amd64,linux/arm64'
+        description: 'Target platforms (add linux/arm64 for a multi-arch build; much slower under QEMU)'
+        default: 'linux/amd64'
         required: false
       tag:
         description: 'Image tag for a manual build'
@@ -33,8 +33,8 @@ jobs:
       - name: Resolve image name
         run: |
           owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
-          echo "IMAGE_NAME=${owner}/fastltr_framework" >> "$GITHUB_ENV"
-          echo "Image: ${{ env.REGISTRY }}/${owner}/fastltr_framework"
+          echo "IMAGE_NAME=${owner}/rep_eater" >> "$GITHUB_ENV"
+          echo "Image: ${{ env.REGISTRY }}/${owner}/rep_eater"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -75,58 +75,33 @@ jobs:
         with:
           context: .
           file: containers/Dockerfile
-          platforms: ${{ inputs.platforms || 'linux/amd64,linux/arm64' }}
+          platforms: ${{ inputs.platforms || 'linux/amd64' }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             GIT_COMMIT=${{ github.sha }}
-            FASTLTR_VERSION=${{ steps.version.outputs.value }}
+            REP_EATER_VERSION=${{ steps.version.outputs.value }}
           # Layer cache, which matters a great deal under QEMU.
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Assert package is private
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          owner_type=$(gh api "/users/${{ github.repository_owner }}" \
-                        --jq '.type' 2>/dev/null || echo '')
-          if [[ "$owner_type" == "Organization" ]]; then
-            endpoint="/orgs/${{ github.repository_owner }}/packages/container/fastltr_framework"
-          else
-            endpoint="/users/${{ github.repository_owner }}/packages/container/fastltr_framework"
-          fi
-
-          visibility=$(gh api "$endpoint" --jq '.visibility' 2>/dev/null || echo '')
-
-          if [[ -z "$visibility" ]]; then
-            echo "::warning::Could not read package visibility from $endpoint."
-            echo "::warning::Verify manually that ghcr.io/${{ env.IMAGE_NAME }} is private."
-          elif [[ "$visibility" == "public" ]]; then
-            echo "::error::ghcr.io/${{ env.IMAGE_NAME }} is PUBLIC, but this repository is private."
-            echo "::error::Set it back to private in the GitHub package settings, or remove this check if going public was intended."
-            exit 1
-          else
-            echo "Package visibility: $visibility"
-          fi
-
       - name: Record what was built
         run: |
           {
-            echo "## FastLTR image"
+            echo "## RepEater image"
             echo
             echo "| field | value |"
             echo "|---|---|"
             echo "| version | \`${{ steps.version.outputs.value }}\` |"
             echo "| commit | \`${{ github.sha }}\` |"
-            echo "| platforms | \`${{ inputs.platforms || 'linux/amd64,linux/arm64' }}\` |"
+            echo "| platforms | \`${{ inputs.platforms || 'linux/amd64' }}\` |"
             echo "| digest | \`${{ steps.build.outputs.digest }}\` |"
             echo
             echo "### Pull as a SIF"
             echo
             echo '```bash'
-            echo "singularity build fastltr.sif \\"
+            echo "singularity build RepEater.sif \\"
             echo "  docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}"
             echo '```'
             echo
@@ -136,6 +111,6 @@ jobs:
             docker buildx imagetools inspect \
               "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}" \
               --format '{{ range $k, $v := .Image.Config.Labels }}{{ $k }}={{ $v }}
-          {{ end }}' 2>/dev/null | grep -E '^io\.fastltr\.' || echo '(labels unavailable)'
+          {{ end }}' 2>/dev/null | grep -E '^io\.repeater\.' || echo '(labels unavailable)'
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

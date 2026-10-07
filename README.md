@@ -11,7 +11,7 @@ a TE consensus library suitable for annotation, alongside intermediate outputs i
 
 </td>
 <td width="220">
-<img src="images/cross_genome_high_res.png" width="220" alt="FastRepeat framework overview">
+<img src="images/cross_genome_high_res.png" width="220" alt="RepEater framework overview">
 </td>
 </tr>
 </table>
@@ -19,7 +19,7 @@ a TE consensus library suitable for annotation, alongside intermediate outputs i
 ---
 
 <p align="center">
-<img src="images/methods.png" alt="FastLTR method overview">
+<img src="images/methods.png" alt="RepEater method overview">
 </p>
 
 ---
@@ -83,16 +83,13 @@ Similarity graph is built with LTR-RT instances as nodes, edges constructed if L
 ### Singularity
 
 **Installation:**
-`singularity pull fastltr.sif docker://ghcr.io/anantmaheshwari/fastltr_framework:latest`
 
 ```bash
-export SINGULARITY_DOCKER_USERNAME=<your-github-username>
-export SINGULARITY_DOCKER_PASSWORD=<your-read:packages-PAT>
-singularity pull fastltr.sif docker://ghcr.io/anantmaheshwari/fastltr_framework:latest
+singularity pull RepEater.sif docker://ghcr.io/anantmaheshwari/rep_eater:latest
 ```
 
 **Execution:**
-`singularity exec fastltr.sif fastltr --genome genome.fa --rounds 10`
+`singularity exec RepEater.sif RepEater --genome genome.fa --rounds 10`
 
 The image carries TEsorter, hmmer and BLAST.
 
@@ -107,8 +104,8 @@ make
 ```
 
 `make` builds everything except TEsorter. Supply that with either the image
-above (`export FASTLTR_IMAGE=/path/to/fastltr.sif`), a TEsorter on `PATH`, or
-`export FASTLTR_TOOL_PATH=<tesorter bin>:<blast bin>:<hmmer bin>` for an
+above (`export REP_EATER_IMAGE=/path/to/RepEater.sif`), a TEsorter on `PATH`, or
+`export REP_EATER_TOOL_PATH=<tesorter bin>:<blast bin>:<hmmer bin>` for an
 existing install.
 
 ---
@@ -118,15 +115,15 @@ existing install.
 ### From a container image
 
 ```bash
-singularity exec fastltr.sif fastltr --genome genome.fa --threads 8 --rounds 10
+singularity exec RepEater.sif RepEater --genome genome.fa --threads 8 --rounds 10
 ```
 
-### From a source checkout
+### From source 
 
 ```bash
 source env/bin/activate
 export PYTHONPATH=$(pwd)
-export FASTLTR_IMAGE=/path/to/fastltr.sif    # only if TEsorter is not on PATH
+export REP_EATER_IMAGE=/path/to/RepEater.sif    # only if TEsorter is not on PATH
 
 # Simplest run
 python engine/detect.py --genome genome.fa --threads 8
@@ -140,6 +137,6 @@ MIT, see [LICENSE](LICENSE).
 
 ## Citation
 
-If you use FastLTR in your research, please cite:
+If you use RepEater in your research, please cite:
 
-> Maheshwari A, Sierra P, Myers EW, Lawniczak MKN, Durbin R. Efficient and precise discovery of LTR-retrotransposon families using FastLTR. *bioRxiv* (2026). 
+> Maheshwari A, Sierra P, Myers EW, Lawniczak MKN, Durbin R. Efficient and precise discovery of LTR-retrotransposon families using RepEater. *bioRxiv* (2026). 
