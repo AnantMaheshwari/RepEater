@@ -1,0 +1,9 @@
+libONE.a
+ONElib.o
+ONEstat
+ONEview
+utils.o
+.DS_Store
+*.so
+*.dSYM
+TEST/ZZ*

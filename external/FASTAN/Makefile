@@ -1,0 +1,33 @@
+DEST_DIR = ~/bin
+
+CFLAGS = -O3 -Wall -Wextra -Wno-unused-result -fno-strict-aliasing
+
+CC = gcc
+
+ALL = FasTAN FastLTR FastTIR
+
+all: $(ALL)
+
+GDB.c: gene_core.c gene_core.h
+GDB.h: gene_core.h
+
+FasTAN: FasTAN.c alncode.c alncode.h ANO.c ANO.h GDB.c GDB.h ONElib.c ONElib.h align.c align.h
+	$(CC) $(CFLAGS) -o FasTAN FasTAN.c alncode.c align.c ANO.c GDB.c gene_core.c ONElib.c -lm -lz -lpthread
+
+FastLTR: FastLTR.c alncode.c alncode.h ANO.c ANO.h GDB.c GDB.h ONElib.c ONElib.h align.c align.h
+	$(CC) $(CFLAGS) -o FastLTR FastLTR.c alncode.c align.c ANO.c GDB.c gene_core.c ONElib.c -lm -lz -lpthread
+
+FastTIR: FastTIR.c alncode.c alncode.h ANO.c ANO.h GDB.c GDB.h ONElib.c ONElib.h align.c align.h
+	$(CC) $(CFLAGS) -o FastTIR FastTIR.c alncode.c align.c ANO.c GDB.c gene_core.c ONElib.c -lm -lz -lpthread
+
+clean:
+	rm -f $(ALL)
+	rm -fr *.dSYM
+	rm -f FasTAN.tar.gz
+
+install:
+	cp $(ALL) $(DEST_DIR)
+
+package:
+	make clean
+	tar -zcf FasTAN.tar.gz LICENSE README.md Makefile *.h *.c

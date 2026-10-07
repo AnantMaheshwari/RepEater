@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fastltr"
+version = "0.1.0"
+description = "De novo discovery, clustering and classification of LTR retrotransposons"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Anant Maheshwari", email = "am86@sanger.ac.uk" }]
+
+dependencies = [
+    "biopython",
+    "matplotlib",
+    "networkx",
+    "numpy",
+    "scipy",
+]
+
+[project.urls]
+Homepage = "https://github.com/AnantMaheshwari/FastLTR_framework"
+
+[project.scripts]
+fastltr = "engine.detect:main"
+
+[tool.setuptools]
+packages = ["engine", "algorithms", "utilities", "seq"]

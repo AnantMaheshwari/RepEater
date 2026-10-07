@@ -1,0 +1,10 @@
+# Compiled binaries (built via `make`) — track sources only
+FasTAN
+FastLTR
+FastTIR
+
+# Build artifacts
+*.o
+*.dSYM/
+*.gch
+FasTAN.tar.gz

@@ -1,0 +1,31 @@
+# Local Python venv — the image builds its own environment.
+env/
+venv/
+__pycache__/
+*.py[cod]
+
+# Compiled artefacts
+*.so
+*.o
+*.a
+*.gch
+*.orig
+seq/extract_ltrs
+seq/aln_info
+external/FASTAN/FasTAN
+external/FASTAN/FastLTR
+external/FASTAN/FastTIR
+external/alntools/taco
+external/alntools/tanbed
+external/alntools/svfind
+external/alntools/gdbmask
+external/alntools/ONEview
+external/ONEcode/ONEstat
+external/ONEcode/ONEview
+external/ONEcode/libONE.a
+external/ONEcode/SEQUENCE_UTILITIES/seqconvert
+external/ONEcode/SEQUENCE_UTILITIES/seqextract
+external/ONEcode/SEQUENCE_UTILITIES/seqstat
+
+# Container artefacts
+*.sif

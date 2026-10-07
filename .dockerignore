@@ -1,0 +1,41 @@
+.git
+.gitignore
+.github
+
+# Local Python venv — the image builds its own environment.
+env/
+venv/
+__pycache__/
+*.py[cod]
+
+# Compiled artefacts
+*.so
+*.o
+*.gch
+*.orig
+seq/extract_ltrs
+seq/aln_info
+external/FASTAN/FasTAN
+external/FASTAN/FastLTR
+external/FASTAN/FastTIR
+external/alntools/taco
+external/alntools/tanbed
+external/alntools/svfind
+external/alntools/gdbmask
+external/alntools/ONEview
+external/ONEcode/ONEstat
+external/ONEcode/ONEview
+external/ONEcode/libONE.a
+external/ONEcode/SEQUENCE_UTILITIES/seqconvert
+external/ONEcode/SEQUENCE_UTILITIES/seqextract
+external/ONEcode/SEQUENCE_UTILITIES/seqstat
+
+# Run output, scratch and docs — none of it belongs in the image.
+*_ltr_output/
+*_ltr_output.baseline/
+*_ltr_output_old/
+*_ltr_output_rexb_metazoa/
+scratch/
+plans/
+images/
+containers/*.sif

@@ -1,0 +1,141 @@
+# Build the FastLTR image
+name: container
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      platforms:
+        description: 'Target platforms (drop linux/arm64 for a fast amd64-only build)'
+        default: 'linux/amd64,linux/arm64'
+        required: false
+      tag:
+        description: 'Image tag for a manual build'
+        default: 'dev'
+        required: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 300
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve image name
+        run: |
+          owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_NAME=${owner}/fastltr_framework" >> "$GITHUB_ENV"
+          echo "Image: ${{ env.REGISTRY }}/${owner}/fastltr_framework"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive version
+        id: version
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${{ inputs.tag || 'dev' }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=${{ inputs.tag || 'dev' }},enable=${{ github.ref_type != 'tag' }}
+            type=sha,format=long
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: containers/Dockerfile
+          platforms: ${{ inputs.platforms || 'linux/amd64,linux/arm64' }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_COMMIT=${{ github.sha }}
+            FASTLTR_VERSION=${{ steps.version.outputs.value }}
+          # Layer cache, which matters a great deal under QEMU.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Assert package is private
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          owner_type=$(gh api "/users/${{ github.repository_owner }}" \
+                        --jq '.type' 2>/dev/null || echo '')
+          if [[ "$owner_type" == "Organization" ]]; then
+            endpoint="/orgs/${{ github.repository_owner }}/packages/container/fastltr_framework"
+          else
+            endpoint="/users/${{ github.repository_owner }}/packages/container/fastltr_framework"
+          fi
+
+          visibility=$(gh api "$endpoint" --jq '.visibility' 2>/dev/null || echo '')
+
+          if [[ -z "$visibility" ]]; then
+            echo "::warning::Could not read package visibility from $endpoint."
+            echo "::warning::Verify manually that ghcr.io/${{ env.IMAGE_NAME }} is private."
+          elif [[ "$visibility" == "public" ]]; then
+            echo "::error::ghcr.io/${{ env.IMAGE_NAME }} is PUBLIC, but this repository is private."
+            echo "::error::Set it back to private in the GitHub package settings, or remove this check if going public was intended."
+            exit 1
+          else
+            echo "Package visibility: $visibility"
+          fi
+
+      - name: Record what was built
+        run: |
+          {
+            echo "## FastLTR image"
+            echo
+            echo "| field | value |"
+            echo "|---|---|"
+            echo "| version | \`${{ steps.version.outputs.value }}\` |"
+            echo "| commit | \`${{ github.sha }}\` |"
+            echo "| platforms | \`${{ inputs.platforms || 'linux/amd64,linux/arm64' }}\` |"
+            echo "| digest | \`${{ steps.build.outputs.digest }}\` |"
+            echo
+            echo "### Pull as a SIF"
+            echo
+            echo '```bash'
+            echo "singularity build fastltr.sif \\"
+            echo "  docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}"
+            echo '```'
+            echo
+            echo "### Pinned tool versions"
+            echo
+            echo '```'
+            docker buildx imagetools inspect \
+              "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}" \
+              --format '{{ range $k, $v := .Image.Config.Labels }}{{ $k }}={{ $v }}
+          {{ end }}' 2>/dev/null | grep -E '^io\.fastltr\.' || echo '(labels unavailable)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

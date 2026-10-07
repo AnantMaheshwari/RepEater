@@ -1,0 +1,181 @@
+#ifndef _CORE
+
+#define _CORE
+
+#include <stdio.h>
+#include <time.h>
+
+/*******************************************************************************************
+ *
+ *  MY STANDARD TYPE DECLARATIONS
+ *
+ ********************************************************************************************/
+
+typedef unsigned char      uint8;
+typedef unsigned short     uint16;
+typedef unsigned int       uint32;
+typedef unsigned long long uint64;
+typedef signed char        int8;
+typedef signed short       int16;
+typedef signed int         int32;
+typedef signed long long   int64;
+typedef float              float32;
+typedef double             float64;
+
+/*******************************************************************************************
+ *
+ *  MACROS TO HELP PARSE COMMAND LINE
+ *
+ ********************************************************************************************/
+
+extern char *Error_Buffer;   //  If non-NULL place error messages here
+
+extern char *Prog_Name;   //  Name of program, available everywhere
+
+extern char *Command_Line;   //  Name of program, available everywhere
+
+#define ARG_INIT(name)                  			\
+  { int   n, i;							\
+    char *c;							\
+								\
+    n = 0;							\
+    for (i = 0; i < argc; i++)					\
+      n += strlen(argv[i])+1;					\
+								\
+    Command_Line = Malloc(n+1,"Allocating command string");	\
+    if (Command_Line == NULL)					\
+      exit (1);							\
+								\
+    c = Command_Line;						\
+    if (argc >= 1)						\
+      { c += sprintf(c,"%s",argv[0]);				\
+        for (i = 1; i < argc; i++)				\
+          c += sprintf(c," %s",argv[i]);			\
+      }								\
+    *c = '\0';							\
+  }								\
+								\
+  Error_Buffer = NULL;  	        			\
+  Prog_Name = Strdup(name,"");          			\
+  for (i = 0; i < 128; i++)             			\
+    flags[i] = 0;
+
+#define ARG_FLAGS(set)                                                                  \
+  for (k = 1; argv[i][k] != '\0'; k++)                                                  \
+    { if (index(set,argv[i][k]) == NULL)                                                \
+        { fprintf(stderr,"%s: -%c is an illegal option\n",Prog_Name,argv[i][k]);        \
+          exit (1);                                                                     \
+        }                                                                               \
+      flags[(int) argv[i][k]] = 1;                                                      \
+    }
+
+#define ARG_POSITIVE(var,name)                                                          \
+  var = strtol(argv[i]+2,&eptr,10);                                                     \
+  if (*eptr != '\0' || argv[i][2] == '\0')                                              \
+    { fprintf(stderr,"%s: -%c '%s' argument is not an integer\n",			\
+                     Prog_Name,argv[i][1],argv[i]+2);      				\
+      exit (1);                                                                         \
+    }                                                                                   \
+  if (var <= 0)                                                                         \
+    { fprintf(stderr,"%s: %s must be positive (%d)\n",Prog_Name,name,var);              \
+      exit (1);                                                                         \
+    }
+
+#define ARG_NON_NEGATIVE(var,name)                                                      \
+  var = strtol(argv[i]+2,&eptr,10);                                                     \
+  if (*eptr != '\0' || argv[i][2] == '\0')                                              \
+    { fprintf(stderr,"%s: -%c '%s' argument is not an integer\n",			\
+                     Prog_Name,argv[i][1],argv[i]+2);      				\
+      exit (1);                                                                         \
+    }                                                                                   \
+  if (var < 0)	                                                                        \
+    { fprintf(stderr,"%s: %s must be non-negative (%d)\n",Prog_Name,name,var);          \
+      exit (1);                                                                         \
+    }
+
+#define ARG_REAL(var)                                                                   \
+  var = strtod(argv[i]+2,&eptr);                                                        \
+  if (*eptr != '\0' || argv[i][2] == '\0')                                              \
+    { fprintf(stderr,"%s: -%c '%s' argument is not a real number\n",			\
+                     Prog_Name,argv[i][1],argv[i]+2);      				\
+      exit (1);                                                                         \
+    }
+
+/*******************************************************************************************
+ *
+ *  ERROR HANDLING
+ *
+ ********************************************************************************************/
+
+#define EXIT(x)			\
+{ if (Error_Buffer == NULL)	\
+    exit (1);			\
+  return (x);			\
+}
+
+int EPRINTF(char *format, ...);
+int WPRINTF(char *format, ...);
+
+
+/*******************************************************************************************
+ *
+ *  MEMORY ALLOCATION,FILE HANDLING, AND PRETTY PRINTING UTILITIES
+ *
+ ********************************************************************************************/
+
+//  The following general utilities return NULL if any of their input pointers are NULL, or if they
+//    could not perform their function (in which case they also print an error to stderr).
+    
+char *SafeTemp(char *name_core);                         //  mkstemp used for safe temporary
+    
+void SystemX(char *command);                             //  Guarded version of system
+
+void *Malloc(int64 size, char *mesg);                    //  Guarded versions of malloc, realloc
+void *Realloc(void *object, int64 size, char *mesg);     //  and strdup, that output "mesg" to
+char *Strdup(char *string, char *mesg);                  //  stderr if out of memory
+char *Strndup(char *string, int len, char *mesg);        //  stderr if out of memory
+
+FILE *Fopen(char *path, char *mode);     // Open file path for "mode"
+char *PathTo(char *path);                // Return path portion of file name "path"
+char *Root(char *path, char *suffix);    // Return the root name, excluding suffix, of "path"
+
+// Catenate returns concatenation of path.sep.root.suffix in a *temporary* buffer
+// Numbered_Suffix returns concatenation of left.<num>.right in a *temporary* buffer
+
+char *Catenate(char *path, char *sep, char *root, char *suffix);
+char *Numbered_Suffix(char *left, int num, char *right);
+
+void Print_Number(int64 num, int width, FILE *out);       //  Print readable big integer
+int  Number_To_String(int64 num, int width, char *where); //  Place # at where, return # of chars
+int  Number_Digits(int64 num);                            //  Return # of digits in printed number
+
+/*******************************************************************************************
+ *
+ *  ROUTINES FOR HANDLING DNA AND ARROW STRINGS
+ *
+ ********************************************************************************************/
+
+#define COMPRESSED_LEN(len)  (((len)+3) >> 2)
+
+void   Compress_Read(int len, char *s);            //  Compress read in-place into 2-bit form
+void Uncompress_Read(int len, char *s, int beg);   //  Uncompress read in-place into numeric form
+void      Print_Read(char *s, int width);
+
+void Lower_Read(char *s);     //  Convert read from numbers to lowercase letters (0-3 to acgt)
+void Upper_Read(char *s);     //  Convert read from numbers to uppercase letters (0-3 to ACGT)
+void Number_Read(char *s);    //  Convert read from letters to numbers
+void Change_Read(char *s);    //  Convert read from one case to the other
+
+void Letter_Arrow(char *s);   //  Convert arrow pw's from numbers to uppercase letters (0-3 to 1234)
+void Number_Arrow(char *s);   //  Convert arrow pw string from letters to numbers
+
+/*******************************************************************************************
+ *
+ *  RESOURCE UTILITY
+ *
+ ********************************************************************************************/
+
+void StartTime();
+void TimeTo(FILE *f, int all, int reset);
+
+#endif // _CORE
