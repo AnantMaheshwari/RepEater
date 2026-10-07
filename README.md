@@ -18,6 +18,12 @@ a TE consensus library suitable for annotation, alongside intermediate outputs i
 
 ---
 
+<p align="center">
+<img src="images/methods.png" alt="FastLTR method overview">
+</p>
+
+---
+
 ```
    GENOME (.fasta/.1seq)
       │
