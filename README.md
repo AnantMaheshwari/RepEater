@@ -97,10 +97,7 @@ The image carries TEsorter, hmmer and BLAST.
 python3.11 -m venv env
 source env/bin/activate
 pip install -r requirements.txt
-
-# 2. Build the C tools and shared libraries
-make            # builds FASTAN, FastLTR, alntools, ONEcode,
-                # the k-mer/WFA .so libraries, extract_ltrs and aln_info
+make            
 ```
 
 `make` builds everything except TEsorter. Supply that with either the image
