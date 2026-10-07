@@ -2,7 +2,7 @@
 <tr>
 <td>
 
-# FastLTR framework
+# RepEater framework
 
 A framework for **de novo discovery, clustering, and classification of LTR retrotransposons**, building on Myers' FasTAN and FastLTR (https://github.com/thegenemyers/FASTAN)
 
