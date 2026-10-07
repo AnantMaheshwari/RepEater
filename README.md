@@ -79,9 +79,6 @@ Similarity graph is built with LTR-RT instances as nodes, edges constructed if L
 **Installation:**
 `singularity pull fastltr.sif docker://ghcr.io/anantmaheshwari/fastltr_framework:latest`
 
-The package is currently **private**, so the pull needs a GitHub personal access
-token with the `read:packages` scope:
-
 ```bash
 export SINGULARITY_DOCKER_USERNAME=<your-github-username>
 export SINGULARITY_DOCKER_PASSWORD=<your-read:packages-PAT>
