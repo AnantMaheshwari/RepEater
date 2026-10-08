@@ -4,6 +4,14 @@ venv/
 __pycache__/
 *.py[cod]
 
+# Packaging artefacts
+build/
+dist/
+*.egg-info/
+
+# Pipeline run outputs
+*_ltr_output/
+
 # Compiled artefacts
 *.so
 *.o
